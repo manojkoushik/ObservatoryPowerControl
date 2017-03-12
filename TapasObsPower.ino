@@ -1,6 +1,8 @@
-#include "NCD4Relay/NCD4Relay.h"
+#include <NCD4Relay.h>
+#include <neopixel.h>
 
 NCD4Relay relayController;
+Adafruit_NeoPixel neoPixels(83, D5, WS2812B);
 
 SYSTEM_MODE(AUTOMATIC);
 
@@ -15,14 +17,35 @@ int Weather = 4;
 void setup()
 {
     Particle.function("ObsPower", triggerRelay);
+    Particle.function("ObsLight", light);
     relayController.setAddress(0,0,0);
     RGB.control(true);
     RGB.brightness(0);
+    pinMode(D5, OUTPUT);
+    neoPixels.begin();
 }
 
 /* This function loops forever --------------------------------------------*/
 void loop()
 {
+}
+
+int light(String command) {
+    int r = command.substring(0,command.indexOf(':')).toInt();
+    command = command.substring(command.indexOf(':')+1);
+    int g = command.substring(0,command.indexOf(':')).toInt();
+    command = command.substring(command.indexOf(':')+1);
+    int b = command.substring(0,command.indexOf(':')).toInt();
+    command = command.substring(command.indexOf(':')+1);
+    int brightness = command.substring(0,command.indexOf(':')).toInt();
+
+    uint16_t i;
+
+    for(i=0; i<neoPixels.numPixels(); i++) {
+        neoPixels.setPixelColor(i, neoPixels.Color(r, g, b));
+    }
+    neoPixels.setBrightness(brightness);
+    neoPixels.show();
 }
 
 int triggerRelay(String fullCommand){
